@@ -107,7 +107,7 @@ export const PatientList = ({ onOpenRegister, searchQuery }: PatientListProps) =
                         <div className="w-32 bg-slate-100 h-1.5 rounded-full overflow-hidden">
                           <div 
                             className="bg-brand-500 h-full rounded-full transition-all duration-1000" 
-                            style={{ width: `${(patient.stage === 'Pregnant' ? patient.week : 40) / 40 * 100}%` }}
+                            style={{ width: `${((patient.stage === 'Pregnant' ? (patient.week ?? 0) : 40) / 40 * 100)}%` }}
                           ></div>
                         </div>
                       </div>
