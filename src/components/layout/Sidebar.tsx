@@ -1,4 +1,4 @@
-
+import { useEffect, useState } from 'react';
 import { 
   LayoutDashboard, 
   Users, 
@@ -13,6 +13,8 @@ import {
   CreditCard
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
+import type { AuthUser } from '../../contexts/AuthContext';
+import appointmentsService from '../../services/appointmentsService';
 
 interface SidebarItemProps {
   icon: React.ReactNode;
@@ -50,13 +52,19 @@ const SidebarItem = ({ icon, label, active, onClick, badge }: SidebarItemProps) 
 interface SidebarProps {
   onNavigate: (page: 'overview' | 'patients' | 'alerts' | 'chw' | 'postnatal' | 'financial-records' | 'analysis' | 'payment' | 'settings') => void;
   currentPage: 'overview' | 'patients' | 'alerts' | 'chw' | 'postnatal' | 'financial-records' | 'analysis' | 'payment' | 'settings';
-  selectedPlan?: {
-    name: string;
-    tier: string;
-  } | null;
+  user: AuthUser;
+  onLogout: () => void;
+  selectedPlan?: { name: string; tier: string } | null;
 }
 
-export const Sidebar = ({ onNavigate, currentPage, selectedPlan }: SidebarProps) => {
+export const Sidebar = ({ onNavigate, currentPage, user, onLogout, selectedPlan }: SidebarProps) => {
+  const [alertCount, setAlertCount] = useState(0);
+
+  useEffect(() => {
+    appointmentsService.getMissedAlerts()
+      .then(tasks => setAlertCount(tasks.filter(t => t.status === 'Pending').length))
+      .catch(() => {});
+  }, []);
   return (
     <aside className="w-72 h-screen bg-white border-r border-slate-100 flex flex-col p-6 sticky top-0">
       <div className="flex items-center gap-3 mb-10 px-2">
@@ -87,7 +95,7 @@ export const Sidebar = ({ onNavigate, currentPage, selectedPlan }: SidebarProps)
           <SidebarItem 
             icon={<Calendar size={20} />} 
             label="Alerts" 
-            badge={12} 
+            badge={alertCount} 
             active={currentPage === 'alerts'}
             onClick={() => onNavigate('alerts')}
           />
@@ -108,7 +116,7 @@ export const Sidebar = ({ onNavigate, currentPage, selectedPlan }: SidebarProps)
             />
             <SidebarItem 
               icon={<BarChart3 size={20} />} 
-              label="Analysis" 
+              label="Financial Report" 
               active={currentPage === 'analysis'} 
               onClick={() => onNavigate('analysis')}
             />
@@ -139,16 +147,18 @@ export const Sidebar = ({ onNavigate, currentPage, selectedPlan }: SidebarProps)
               active={currentPage === 'settings'}
               onClick={() => onNavigate('settings')}
             />
-        <SidebarItem icon={<LogOut size={20} />} label="Sign Out" />
+        <SidebarItem icon={<LogOut size={20} />} label="Sign Out" onClick={onLogout} />
         
         <div className="mt-6 p-4 bg-slate-50 rounded-2xl border border-slate-100">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-10 h-10 rounded-full bg-brand-100 flex items-center justify-center">
-              <span className="text-brand-700 font-bold text-sm">JS</span>
+              <span className="text-brand-700 font-bold text-sm">
+                {(user.hospitalName ?? user.name).split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+              </span>
             </div>
             <div className="flex-1">
-              <p className="text-sm font-semibold text-slate-900">Dr. Jean Smith</p>
-              <p className="text-xs text-slate-500">OB/GYN Specialist</p>
+              <p className="text-sm font-semibold text-slate-900">{user.hospitalName ?? user.name}</p>
+              <p className="text-xs text-slate-500 capitalize">{user.role}</p>
               {selectedPlan && (
                 <p className="text-xs text-brand-600 font-medium mt-1">
                   {selectedPlan.name} Plan

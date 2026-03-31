@@ -1,14 +1,8 @@
 
+import React from 'react';
+import { useMamaCare } from '../../contexts/useMamaCare';
 import { Search, Filter, Plus, ChevronRight, MoreHorizontal } from 'lucide-react';
-
-const patients = [
-  { id: 1, name: 'Mukamana Aliane', age: 24, week: 32, phone: '0788123456', status: 'High Risk', stage: 'Pregnant', lastVisit: '2026-03-20', misses: 2, missType: 'ANC', lastMissed: '2026-03-24', preferred: 'SMS' },
-  { id: 2, name: 'Uwimana Claudine', age: 28, week: 14, phone: '0788234567', status: 'Stable', stage: 'Pregnant', lastVisit: '2026-03-25', misses: 0, missType: 'ANC', lastMissed: '-', preferred: 'App' },
-  { id: 3, name: 'Kaliza Solange', age: 22, week: 28, phone: '0788345678', status: 'Moderate', stage: 'Pregnant', lastVisit: '2026-03-22', misses: 3, missType: 'ANC', lastMissed: '2026-03-22', preferred: 'SMS' },
-  { id: 4, name: 'Nyirasafari Marie', age: 31, week: 38, phone: '0788456789', status: 'High Risk', stage: 'Postpartum', lastVisit: '2026-03-27', misses: 1, missType: 'PNC', lastMissed: '2026-03-27', preferred: 'Call' },
-  { id: 5, name: 'Umutesi Denise', age: 26, week: 11, phone: '0788567890', status: 'Stable', stage: 'Infant Care', lastVisit: '2026-03-18', misses: 1, missType: 'Vaccine', lastMissed: '2026-03-18', preferred: 'SMS' },
-  { id: 6, name: 'Umuhoza Grace', age: 29, week: 19, phone: '0788678901', status: 'Stable', stage: 'Archived', lastVisit: '2025-04-12', misses: 0, missType: 'None', lastMissed: '-', preferred: 'SMS' },
-];
+import type { Patient } from '../../contexts/MamaCareContext';
 
 interface PatientListProps {
   onOpenRegister: () => void;
@@ -16,11 +10,18 @@ interface PatientListProps {
 }
 
 export const PatientList = ({ onOpenRegister, searchQuery }: PatientListProps) => {
-  const filteredPatients = patients.filter(patient => 
+  const { state } = useMamaCare();
+  const { patients, loading } = state;
+
+  const filteredPatients: Patient[] = patients.filter(patient => 
     patient.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    patient.id.toString().includes(searchQuery) ||
+    patient.id?.toString().includes(searchQuery) ||
     patient.phone.includes(searchQuery)
   );
+
+  if (loading) {
+    return <div className="flex items-center justify-center py-12 text-slate-500">Loading patients...</div>;
+  }
 
   return (
     <div className="space-y-6">

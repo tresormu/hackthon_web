@@ -11,6 +11,7 @@ import {
   Server
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
+import type { AuthUser } from '../../contexts/AuthContext';
 
 interface SidebarItemProps {
   icon: React.ReactNode;
@@ -48,9 +49,11 @@ const SidebarItem = ({ icon, label, active, onClick, badge }: SidebarItemProps) 
 interface AdminSidebarProps {
   onNavigate: (page: 'overview' | 'users' | 'billing' | 'analytics' | 'settings') => void;
   currentPage: 'overview' | 'users' | 'billing' | 'analytics' | 'settings';
+  user: AuthUser;
+  onLogout: () => void;
 }
 
-export const AdminSidebar = ({ onNavigate, currentPage }: AdminSidebarProps) => {
+export const AdminSidebar = ({ onNavigate, currentPage, user, onLogout }: AdminSidebarProps) => {
   return (
     <aside className="w-72 h-screen bg-white border-r border-slate-100 flex flex-col p-6 sticky top-0">
       <div className="flex items-center gap-3 mb-10 px-2">
@@ -128,17 +131,19 @@ export const AdminSidebar = ({ onNavigate, currentPage }: AdminSidebarProps) => 
       </nav>
 
       <div className="mt-auto space-y-1">
-        <SidebarItem icon={<LogOut size={20} />} label="Sign Out" />
+        <SidebarItem icon={<LogOut size={20} />} label="Sign Out" onClick={onLogout} />
         
         <div className="mt-6 p-4 bg-emerald-50 rounded-2xl border border-emerald-100">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
-              <Shield className="text-emerald-700 w-5 h-5" />
+              <span className="text-emerald-700 font-bold text-sm">
+                {user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)}
+              </span>
             </div>
             <div className="flex-1">
-              <p className="text-sm font-semibold text-slate-900">System Administrator</p>
-              <p className="text-xs text-slate-500">Full Access</p>
-              <p className="text-xs text-emerald-600 font-medium mt-1">System Health: Optimal</p>
+              <p className="text-sm font-semibold text-slate-900">{user.name}</p>
+              <p className="text-xs text-slate-500">Administrator</p>
+              <p className="text-xs text-emerald-600 font-medium mt-1">Full Access</p>
             </div>
           </div>
           <div className="text-xs text-slate-600 text-center">

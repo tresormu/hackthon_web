@@ -1,5 +1,5 @@
-
-import { Search, Bell, User } from 'lucide-react';
+import { Search, Bell } from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface HeaderProps {
   searchQuery: string;
@@ -7,14 +7,23 @@ interface HeaderProps {
 }
 
 export const Header = ({ searchQuery, onSearchChange }: HeaderProps) => {
+  const { user } = useAuth();
+
+  const initials = (user?.hospitalName ?? user?.name)
+    ?.split(' ')
+    .map(n => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2) ?? '??';
+
   return (
     <header className="h-20 bg-white border-b border-slate-100 flex items-center justify-between px-8 sticky top-0 z-10">
       <div className="flex-1 max-w-xl">
         <div className="relative group">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand-500 transition-colors" size={18} />
-          <input 
-            type="text" 
-            placeholder="Search patients, appointments, or records..." 
+          <input
+            type="text"
+            placeholder="Search patients, appointments, or records..."
             className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-brand-500/10 focus:bg-white transition-all outline-none"
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
@@ -27,16 +36,16 @@ export const Header = ({ searchQuery, onSearchChange }: HeaderProps) => {
           <Bell size={22} className="group-hover:scale-110 transition-transform" />
           <span className="absolute top-2 right-2.5 w-2 h-2 bg-brand-500 border-2 border-white rounded-full"></span>
         </button>
-        
+
         <div className="h-8 w-[1px] bg-slate-100 mx-2"></div>
-        
+
         <div className="flex items-center gap-3 pl-2">
           <div className="text-right hidden sm:block">
-            <p className="text-sm font-semibold text-slate-900 leading-none">Dr. Jean Smith</p>
-            <p className="text-[11px] text-brand-600 font-medium mt-1 uppercase tracking-wider">On Duty</p>
+            <p className="text-sm font-semibold text-slate-900 leading-none">{user?.hospitalName ?? user?.name ?? '—'}</p>
+            <p className="text-[11px] text-brand-600 font-medium mt-1 uppercase tracking-wider capitalize">{user?.role ?? ''}</p>
           </div>
-          <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center border border-slate-200 overflow-hidden group cursor-pointer hover:border-brand-300 transition-colors">
-            <User size={20} className="text-slate-400 group-hover:text-brand-500 transition-colors" />
+          <div className="w-10 h-10 rounded-xl bg-brand-100 flex items-center justify-center border border-brand-200 cursor-pointer hover:border-brand-400 transition-colors">
+            <span className="text-brand-700 font-bold text-sm">{initials}</span>
           </div>
         </div>
       </div>

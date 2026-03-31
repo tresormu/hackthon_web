@@ -1,4 +1,5 @@
 
+import { useEffect, useState } from 'react';
 import { 
   Users, 
   Calendar, 
@@ -18,6 +19,7 @@ import {
   ResponsiveContainer
 } from 'recharts';
 import { motion } from 'framer-motion';
+import dashboardService, { type DashboardSummary } from '../../services/dashboardService';
 
 const data = [
   { name: 'Jan', patients: 45, visits: 120 },
@@ -80,6 +82,12 @@ interface OverviewProps {
 }
 
 export const Overview = ({ searchQuery }: OverviewProps) => {
+  const [summary, setSummary] = useState<DashboardSummary | null>(null);
+
+  useEffect(() => {
+    dashboardService.getSummary().then(setSummary).catch(console.error);
+  }, []);
+
   const priorityFollowUps = [
     { name: "Mukamana Aliane", week: "32", status: "Missed Appointment", risk: "High" },
     { name: "Uwimana Claudine", week: "14", status: "First Trimester", risk: "Low" },
@@ -109,7 +117,7 @@ export const Overview = ({ searchQuery }: OverviewProps) => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard 
           title="Total Patients" 
-          value="248" 
+          value={summary?.totalPatients ?? '—'} 
           icon={Users} 
           trend="+12%" 
           color="bg-brand-500" 
@@ -117,7 +125,7 @@ export const Overview = ({ searchQuery }: OverviewProps) => {
         />
         <StatCard 
           title="Pending Appointments" 
-          value="42" 
+          value={summary?.missedVisits ?? '—'} 
           icon={Calendar} 
           trend="+5%" 
           color="bg-amber-500" 
@@ -125,15 +133,15 @@ export const Overview = ({ searchQuery }: OverviewProps) => {
         />
         <StatCard 
           title="High Risk Cases" 
-          value="18" 
+          value={summary?.highRisk ?? '—'} 
           icon={AlertTriangle} 
           trend="-2%" 
           color="bg-rose-500" 
           delay={0.3}
         />
         <StatCard 
-          title="Postnatal Care" 
-          value="56" 
+          title="CHW Tasks" 
+          value={summary?.chwTasks ?? '—'} 
           icon={ArrowUpRight} 
           trend="+8%" 
           color="bg-emerald-500" 

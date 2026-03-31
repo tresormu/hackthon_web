@@ -1,323 +1,243 @@
-import { useState, useMemo } from 'react';
-import { TrendingUp, Users, Calendar, DollarSign, Activity, HardDrive, Target, BarChart3, PieChart } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { TrendingUp, TrendingDown, DollarSign, Activity, AlertCircle, Clock, BarChart3 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { 
-  AreaChart, 
-  Area, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  PieChart as RePieChart,
-  Pie,
-  Cell
+import {
+  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  BarChart, Bar, PieChart as RePieChart, Pie, Cell, Legend,
 } from 'recharts';
-import type { FinancialStats } from '../../types/financial';
-import { getFinancialStats } from '../../utils/financialHelpers';
+import financialService, { type FinancialReport } from '../../services/financialService';
+
+const PLAN_COLORS = ['#ec4899', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6'];
 
 export const AnalysisComponent = () => {
-  const [timeRange, setTimeRange] = useState<'30' | '90' | '365'>('90');
-  const [selectedMetric, setSelectedMetric] = useState<'cost' | 'usage' | 'efficiency'>('cost');
+  const [report, setReport] = useState<FinancialReport | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Mock data
-  const mockRecords = [
-    { month: 'Jan', cost: 99, patients: 45, appointments: 120 },
-    { month: 'Feb', cost: 99, patients: 52, appointments: 145 },
-    { month: 'Mar', cost: 99, patients: 61, appointments: 132 },
-    { month: 'Apr', cost: 99, patients: 58, appointments: 167 },
-    { month: 'May', cost: 99, patients: 72, appointments: 180 },
-    { month: 'Jun', cost: 99, patients: 85, appointments: 195 },
-  ];
+  useEffect(() => {
+    financialService.getReport()
+      .then(setReport)
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, []);
 
-  const currentPlan = {
-    price: 99,
-    billingCycle: 'monthly' as const,
-    maxPatients: 200
-  };
+  if (loading) return <div className="flex items-center justify-center py-20 text-slate-500">Loading report...</div>;
 
-  const usageData = {
-    patients: 85,
-    appointments: 195,
-    storageUsed: 850
-  };
-
-  const stats: FinancialStats = useMemo(() => 
-    getFinancialStats([], currentPlan, usageData), 
-    [currentPlan, usageData]
+  if (!report) return (
+    <div className="flex items-center justify-center py-20 text-slate-500 italic">
+      No financial data available yet.
+    </div>
   );
 
-  const costData = useMemo(() => {
-    const multiplier = timeRange === '30' ? 1 : timeRange === '90' ? 3 : 12;
-    return mockRecords.slice(-multiplier).map(record => ({
-      month: record.month,
-      cost: record.cost,
-      patients: record.patients,
-      appointments: record.appointments
-    }));
-  }, [timeRange]);
+  const { summary, monthlyRevenue, revenueByPlan } = report;
+  const growthPositive = summary.monthOverMonthGrowth >= 0;
 
-  const utilizationData = [
-    { name: 'Used', value: stats.planUtilization, color: '#ec4899' },
-    { name: 'Available', value: 100 - stats.planUtilization, color: '#e2e8f0' }
+  const summaryCards = [
+    {
+      label: 'Total Revenue',
+      value: `RWF ${summary.totalRevenue.toLocaleString()}`,
+      icon: DollarSign,
+      color: 'bg-emerald-500',
+      sub: 'All completed transactions',
+    },
+    {
+      label: 'This Month',
+      value: `RWF ${summary.currentMonthRevenue.toLocaleString()}`,
+      icon: BarChart3,
+      color: 'bg-brand-500',
+      sub: `${growthPositive ? '+' : ''}${summary.monthOverMonthGrowth}% vs last month`,
+      trend: growthPositive,
+    },
+    {
+      label: 'Avg. Transaction',
+      value: `RWF ${summary.avgTransactionValue.toLocaleString()}`,
+      icon: Activity,
+      color: 'bg-amber-500',
+      sub: `${summary.totalTransactions} total transactions`,
+    },
+    {
+      label: 'Pending / Failed',
+      value: `${summary.pendingTransactions} / ${summary.failedTransactions}`,
+      icon: AlertCircle,
+      color: 'bg-rose-500',
+      sub: 'Requires attention',
+    },
   ];
-
-  const costBreakdownData = [
-    { name: 'Subscription', value: 85, color: '#ec4899' },
-    { name: 'Storage', value: 10, color: '#f59e0b' },
-    { name: 'Support', value: 5, color: '#10b981' }
-  ];
-
-  const MetricCard = ({ title, value, icon: Icon, trend, color, unit = '' }: any) => (
-    <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.1 }}
-      className="card group cursor-pointer"
-    >
-      <div className="flex items-start justify-between">
-        <div className={`p-3 rounded-2xl ${color} bg-opacity-10 transition-colors group-hover:bg-opacity-20`}>
-          <Icon className={color.replace('bg-', 'text-')} size={24} />
-        </div>
-        <div className="flex items-center gap-1 text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg text-xs font-bold">
-          <TrendingUp size={12} />
-          {trend}
-        </div>
-      </div>
-      <div className="mt-4">
-        <h3 className="text-slate-500 text-sm font-medium">{title}</h3>
-        <p className="text-3xl font-bold text-slate-900 mt-1">
-          {value}{unit}
-        </p>
-      </div>
-    </motion.div>
-  );
 
   return (
     <div className="space-y-8">
       {/* Header */}
-      <motion.div 
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
+      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}
         className="flex items-center justify-between"
       >
         <div>
-          <h2 className="text-3xl font-bold text-slate-900 tracking-tight">Analysis</h2>
-          <p className="text-slate-500 mt-1">Usage analytics and cost insights</p>
+          <h2 className="text-3xl font-bold text-slate-900 tracking-tight">Financial Report</h2>
+          <p className="text-slate-500 mt-1">Revenue analytics, plan breakdown, and growth trends.</p>
         </div>
-        <div className="flex items-center gap-2">
-          <select
-            className="input text-sm"
-            value={timeRange}
-            onChange={(e) => setTimeRange(e.target.value as any)}
-          >
-            <option value="30">Last 30 Days</option>
-            <option value="90">Last 90 Days</option>
-            <option value="365">Last Year</option>
-          </select>
+        <div className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold ${
+          growthPositive ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'
+        }`}>
+          {growthPositive ? <TrendingUp size={18} /> : <TrendingDown size={18} />}
+          {growthPositive ? '+' : ''}{summary.monthOverMonthGrowth}% MoM
         </div>
       </motion.div>
 
-      {/* Key Metrics */}
+      {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <MetricCard 
-          title="Total Patients" 
-          value={stats.totalPatients} 
-          icon={Users} 
-          trend="+12%" 
-          color="bg-brand-500" 
-        />
-        <MetricCard 
-          title="Monthly Cost" 
-          value={`$${stats.currentMonthSpend}`} 
-          icon={DollarSign} 
-          trend="0%" 
-          color="bg-amber-500" 
-        />
-        <MetricCard 
-          title="Plan Utilization" 
-          value={`${stats.planUtilization.toFixed(1)}%`} 
-          icon={Target} 
-          trend="+5%" 
-          color="bg-emerald-500" 
-        />
-        <MetricCard 
-          title="Storage Used" 
-          value={`${stats.storageUsed}MB`} 
-          icon={HardDrive} 
-          trend="+15%" 
-          color="bg-slate-500" 
-        />
+        {summaryCards.map(({ label, value, icon: Icon, color, sub, trend }, i) => (
+          <motion.div key={label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.05 * i }} className="card group"
+          >
+            <div className="flex items-start justify-between">
+              <div className={`p-3 rounded-2xl ${color} bg-opacity-10`}>
+                <Icon className={`${color.replace('bg-', 'text-')}`} size={22} />
+              </div>
+              {trend !== undefined && (
+                <span className={`flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-lg ${
+                  trend ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'
+                }`}>
+                  {trend ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+                  {summary.monthOverMonthGrowth}%
+                </span>
+              )}
+            </div>
+            <div className="mt-4">
+              <p className="text-slate-500 text-sm font-medium">{label}</p>
+              <p className="text-2xl font-bold text-slate-900 mt-1">{value}</p>
+              <p className="text-xs text-slate-400 mt-1">{sub}</p>
+            </div>
+          </motion.div>
+        ))}
       </div>
 
-      {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Cost Trend Chart */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="card lg:col-span-2"
-        >
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h3 className="text-lg font-bold text-slate-900">Cost Trend</h3>
-              <p className="text-xs text-slate-500">Monthly subscription costs</p>
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setSelectedMetric('cost')}
-                className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
-                  selectedMetric === 'cost' ? 'bg-brand-100 text-brand-600' : 'text-slate-500 hover:text-slate-700'
-                }`}
-              >
-                <BarChart3 size={16} />
-              </button>
-              <button
-                onClick={() => setSelectedMetric('usage')}
-                className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
-                  selectedMetric === 'usage' ? 'bg-brand-100 text-brand-600' : 'text-slate-500 hover:text-slate-700'
-                }`}
-              >
-                <Activity size={16} />
-              </button>
-            </div>
+      {/* Monthly Revenue Chart */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="card">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h3 className="text-lg font-bold text-slate-900">Monthly Revenue</h3>
+            <p className="text-xs text-slate-500">Last 12 months of completed transactions</p>
           </div>
+        </div>
+        {monthlyRevenue.every(m => m.revenue === 0) ? (
+          <div className="h-[300px] flex items-center justify-center text-slate-400 italic">
+            No revenue data yet — transactions will appear here once completed.
+          </div>
+        ) : (
           <div className="h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={costData}>
+              <AreaChart data={monthlyRevenue}>
                 <defs>
-                  <linearGradient id="colorCost" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#ec4899" stopOpacity={0.1}/>
-                    <stop offset="95%" stopColor="#ec4899" stopOpacity={0}/>
+                  <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#ec4899" stopOpacity={0.15} />
+                    <stop offset="95%" stopColor="#ec4899" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} />
-                <YAxis axisLine={false} tickLine={false} tick={{fill: '#94a3b8', fontSize: 12}} />
-                <Tooltip 
+                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }}
+                  tickFormatter={v => `${(v / 1000).toFixed(0)}k`} />
+                <Tooltip
                   contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                  formatter={(v: number) => [`RWF ${v.toLocaleString()}`, 'Revenue']}
                 />
-                <Area type="monotone" dataKey="cost" stroke="#ec4899" strokeWidth={3} fillOpacity={1} fill="url(#colorCost)" />
+                <Area type="monotone" dataKey="revenue" stroke="#ec4899" strokeWidth={3}
+                  fillOpacity={1} fill="url(#colorRevenue)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
+        )}
+      </motion.div>
+
+      {/* Plan Breakdown + Transaction Volume */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Revenue by Plan — Pie */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.25 }} className="card">
+          <div className="mb-6">
+            <h3 className="text-lg font-bold text-slate-900">Revenue by Plan</h3>
+            <p className="text-xs text-slate-500">Breakdown of completed revenue per subscription plan</p>
+          </div>
+          {revenueByPlan.length === 0 ? (
+            <div className="h-[260px] flex items-center justify-center text-slate-400 italic">No plan data yet.</div>
+          ) : (
+            <>
+              <div className="h-[220px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <RePieChart>
+                    <Pie data={revenueByPlan} dataKey="revenue" nameKey="planName"
+                      cx="50%" cy="50%" innerRadius={55} outerRadius={90} paddingAngle={4}>
+                      {revenueByPlan.map((_, i) => (
+                        <Cell key={i} fill={PLAN_COLORS[i % PLAN_COLORS.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip formatter={(v: number) => `RWF ${v.toLocaleString()}`} />
+                    <Legend />
+                  </RePieChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="mt-4 space-y-2">
+                {revenueByPlan.map((p, i) => (
+                  <div key={p._id} className="flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: PLAN_COLORS[i % PLAN_COLORS.length] }} />
+                      <span className="text-slate-700 font-medium">{p.planName}</span>
+                    </div>
+                    <div className="text-right">
+                      <span className="font-bold text-slate-900">RWF {p.revenue.toLocaleString()}</span>
+                      <span className="text-slate-400 text-xs ml-2">({p.count} tx)</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
         </motion.div>
 
-        {/* Utilization Pie Chart */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="card"
-        >
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h3 className="text-lg font-bold text-slate-900">Plan Utilization</h3>
-              <p className="text-xs text-slate-500">Patient capacity usage</p>
+        {/* Monthly Transaction Volume — Bar */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="card">
+          <div className="mb-6">
+            <h3 className="text-lg font-bold text-slate-900">Transaction Volume</h3>
+            <p className="text-xs text-slate-500">Number of transactions per month</p>
+          </div>
+          {monthlyRevenue.every(m => m.transactions === 0) ? (
+            <div className="h-[260px] flex items-center justify-center text-slate-400 italic">No transaction data yet.</div>
+          ) : (
+            <div className="h-[260px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={monthlyRevenue}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                  <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} allowDecimals={false} />
+                  <Tooltip
+                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                    formatter={(v: number) => [v, 'Transactions']}
+                  />
+                  <Bar dataKey="transactions" fill="#ec4899" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
-          </div>
-          <div className="h-[300px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <RePieChart>
-                <Pie
-                  data={utilizationData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={100}
-                  paddingAngle={5}
-                  dataKey="value"
-                >
-                  {utilizationData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </RePieChart>
-            </ResponsiveContainer>
-          </div>
-          <div className="mt-6 space-y-3">
-            {utilizationData.map((entry, index) => (
-              <div key={entry.name} className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className={`w-3 h-3 rounded-full`} style={{ backgroundColor: entry.color }} />
-                  <span className="text-sm text-slate-700">{entry.name}</span>
-                </div>
-                <span className="text-sm font-bold text-slate-900">{entry.value.toFixed(1)}%</span>
-              </div>
-            ))}
-          </div>
+          )}
         </motion.div>
       </div>
 
-      {/* Cost Breakdown */}
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4 }}
-        className="card"
-      >
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h3 className="text-lg font-bold text-slate-900">Cost Breakdown</h3>
-            <p className="text-xs text-slate-500">Where your money goes</p>
-          </div>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {costBreakdownData.map((item, index) => (
-            <motion.div
-              key={item.name}
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.1 + index * 0.1 }}
-              className="text-center"
-            >
-              <div className="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center" style={{ backgroundColor: `${item.color}20` }}>
-                <DollarSign size={32} style={{ color: item.color }} />
-              </div>
-              <h4 className="font-bold text-slate-900 mb-2">{item.name}</h4>
-              <p className="text-2xl font-bold text-slate-900">${item.value}</p>
-              <p className="text-sm text-slate-600">per month</p>
-            </motion.div>
-          ))}
-        </div>
-      </motion.div>
-
-      {/* Efficiency Metrics */}
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
-        className="card"
-      >
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h3 className="text-lg font-bold text-slate-900">Efficiency Metrics</h3>
-            <p className="text-xs text-slate-500">Performance indicators</p>
-          </div>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="p-6 bg-slate-50 rounded-xl">
-            <div className="flex items-center gap-3 mb-4">
-              <Users className="text-brand-600" size={20} />
-              <h4 className="font-semibold text-slate-900">Cost Per Patient</h4>
+      {/* Pending / Failed attention card */}
+      {(summary.pendingTransactions > 0 || summary.failedTransactions > 0) && (
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}
+          className="card border border-amber-100 bg-amber-50/40"
+        >
+          <div className="flex items-start gap-4">
+            <div className="p-3 bg-amber-100 rounded-2xl">
+              <Clock className="text-amber-600" size={22} />
             </div>
-            <p className="text-3xl font-bold text-slate-900">${stats.averageCostPerPatient.toFixed(2)}</p>
-            <p className="text-sm text-slate-600 mt-2">Average monthly cost per patient</p>
-          </div>
-          <div className="p-6 bg-slate-50 rounded-xl">
-            <div className="flex items-center gap-3 mb-4">
-              <TrendingUp className="text-emerald-600" size={20} />
-              <h4 className="font-semibold text-slate-900">Monthly Growth</h4>
+            <div>
+              <h3 className="text-base font-bold text-slate-900">Transactions Requiring Attention</h3>
+              <p className="text-sm text-slate-600 mt-1">
+                <span className="font-bold text-amber-700">{summary.pendingTransactions} pending</span> and{' '}
+                <span className="font-bold text-rose-700">{summary.failedTransactions} failed</span> transactions.
+                Review them in Financial Records to take action.
+              </p>
             </div>
-            <p className="text-3xl font-bold text-slate-900">{stats.monthlyGrowth.toFixed(1)}%</p>
-            <p className="text-sm text-slate-600 mt-2">Patient growth rate</p>
           </div>
-        </div>
-      </motion.div>
+        </motion.div>
+      )}
     </div>
   );
 };
