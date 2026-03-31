@@ -89,7 +89,7 @@ function mamaCareReducer(state: State, action: ActionType): State {
 interface ContextType {
   state: State;
   dispatch: React.Dispatch<ActionType>;
-  addPatient: (data: Omit<Patient, 'id' | 'misses' | 'enrolledAt' | 'lastMissed'>) => Promise<void>;
+  addPatient: (data: Omit<Patient, 'id' | 'misses' | 'enrolledAt' | 'lastMissed'>) => Promise<Patient & { pinCode?: string }>;
   incrementMiss: (id: number | string, missType: string, date: string) => Promise<void>;
   assignChw: (patientId: number | string, patientName: string, chw: string, reason: string) => Promise<void>;
   completeTask: (taskId: number | string) => Promise<void>;
@@ -121,13 +121,14 @@ export const MamaCareProvider: React.FC<{ children: ReactNode }> = ({ children }
   };
 
 
-  const addPatient = async (data: Omit<Patient, 'id' | 'misses' | 'enrolledAt' | 'lastMissed'>) => {
+  const addPatient = async (data: Omit<Patient, 'id' | 'misses' | 'enrolledAt' | 'lastMissed'>): Promise<Patient & { pinCode?: string }> => {
     try {
       const newPatient = await mothersService.create(data as any);
       dispatch({ type: 'ADD_PATIENT', payload: newPatient });
+      return newPatient;
     } catch (error) {
       console.error('Add patient error:', error);
-      throw error; // re-throw so the modal can catch and show the error
+      throw error;
     }
   };
 

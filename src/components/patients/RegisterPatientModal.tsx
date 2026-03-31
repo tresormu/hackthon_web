@@ -78,7 +78,7 @@ export const RegisterPatientModal = ({ isOpen, onClose }: RegisterPatientModalPr
           sex: c.sex || undefined,
         })),
       } as any);
-      if ((result as any)?.pinCode) setGeneratedPin((result as any).pinCode);
+      if (result?.pinCode) setGeneratedPin(result.pinCode);
       setStep(4);
     } catch (err: any) {
       setError(err?.response?.data?.error ?? err?.response?.data?.message ?? 'Failed to register patient. Please try again.');

@@ -22,7 +22,7 @@ function mapMother(m: any): Patient {
 
 export const mothersService = {
   getAll: async (): Promise<Patient[]> => {
-    const response = await api.get("/mothers");
+    const response = await api.get("/doctors/my-patients");
     const raw = response.data?.data ?? response.data;
     return Array.isArray(raw) ? raw.map(mapMother) : [];
   },

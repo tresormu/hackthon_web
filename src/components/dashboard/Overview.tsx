@@ -1,5 +1,6 @@
 
 import { useEffect, useState } from 'react';
+import { useMamaCare } from '../../contexts/useMamaCare';
 import { 
   Users, 
   Calendar, 
@@ -20,15 +21,28 @@ import {
 } from 'recharts';
 import { motion } from 'framer-motion';
 import dashboardService, { type DashboardSummary } from '../../services/dashboardService';
+import { PinAlertsPanel } from './PinAlertsPanel';
 
-const data = [
-  { name: 'Jan', patients: 45, visits: 120 },
-  { name: 'Feb', patients: 52, visits: 145 },
-  { name: 'Mar', patients: 61, visits: 132 },
-  { name: 'Apr', patients: 58, visits: 167 },
-  { name: 'May', patients: 72, visits: 180 },
-  { name: 'Jun', patients: 85, visits: 195 },
-];
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+function buildTrendData(patients: import('../../contexts/MamaCareContext').Patient[]) {
+  const now = new Date();
+  const counts: Record<string, number> = {};
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    counts[`${d.getFullYear()}-${d.getMonth()}`] = 0;
+  }
+  patients.forEach(p => {
+    if (!p.enrolledAt) return;
+    const d = new Date(p.enrolledAt);
+    const key = `${d.getFullYear()}-${d.getMonth()}`;
+    if (key in counts) counts[key]++;
+  });
+  return Object.entries(counts).map(([key, patients]) => ({
+    name: MONTHS[parseInt(key.split('-')[1])],
+    patients,
+  }));
+}
 
 const StatCard = ({ title, value, icon: Icon, trend, color, delay }: any) => (
   <motion.div 
@@ -83,24 +97,32 @@ interface OverviewProps {
 
 export const Overview = ({ searchQuery }: OverviewProps) => {
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
+  const { state } = useMamaCare();
+  const trendData = buildTrendData(state.patients);
 
   useEffect(() => {
     dashboardService.getSummary().then(setSummary).catch(console.error);
   }, []);
 
-  const priorityFollowUps = [
-    { name: "Mukamana Aliane", week: "32", status: "Missed Appointment", risk: "High" },
-    { name: "Uwimana Claudine", week: "14", status: "First Trimester", risk: "Low" },
-    { name: "Kaliza Solange", week: "28", status: "GD Screening Due", risk: "Medium" },
-    { name: "Nyirasafari Marie", week: "38", status: "Near Delivery", risk: "High" },
-  ];
-
-  const filteredPatients = priorityFollowUps.filter(patient =>
-    patient.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const priorityPatients = state.patients
+    .filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()))
+    .sort((a, b) => {
+      const score = (p: typeof a) => (p.status === 'High Risk' ? 2 : p.status === 'Moderate' ? 1 : 0) + p.misses;
+      return score(b) - score(a);
+    })
+    .slice(0, 5)
+    .map(p => ({
+      name: p.name,
+      week: p.week?.toString() ?? '—',
+      status: p.stage === 'Pregnant' ? `Week ${p.week}` : p.stage,
+      risk: p.status === 'High Risk' ? 'High' : 'Low',
+    }));
 
   return (
     <div className="space-y-8">
+      {/* PIN Alerts */}
+      <PinAlertsPanel />
+
       {/* Header Section */}
       <div className="flex items-end justify-between">
         <div>
@@ -202,7 +224,7 @@ export const Overview = ({ searchQuery }: OverviewProps) => {
           </div>
           <div className="h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={data}>
+              <AreaChart data={trendData}>
                 <defs>
                   <linearGradient id="colorPatients" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#ec4899" stopOpacity={0.1}/>
@@ -338,13 +360,13 @@ export const Overview = ({ searchQuery }: OverviewProps) => {
           </button>
         </div>
         <div className="divide-y divide-slate-50">
-          {filteredPatients.length > 0 ? (
-            filteredPatients.map((patient, index) => (
+          {priorityPatients.length > 0 ? (
+            priorityPatients.map((patient, index) => (
               <RecentPatient key={index} {...patient} />
             ))
           ) : (
             <div className="p-8 text-center text-slate-500 italic">
-              No patients found matching "{searchQuery}"
+              No patients registered yet
             </div>
           )}
         </div>

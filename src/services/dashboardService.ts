@@ -7,16 +7,32 @@ export interface DashboardSummary {
   chwTasks: number;
 }
 
+export interface PinAlert {
+  _id: string;
+  motherName: string;
+  motherPhone: string;
+  pinCode: string;
+  dismissed: boolean;
+  createdAt: string;
+}
+
 export const dashboardService = {
   getSummary: async (): Promise<DashboardSummary> => {
-    const response = await api.get("/dashboard/summary");
-    const d = response.data;
+    const response = await api.get("/doctors/summary");
+    const d = response.data.summary ?? response.data;
     return {
-      totalPatients: d.activeMothers ?? 0,
-      highRisk: 0,
-      missedVisits: d.missedAppointments ?? 0,
-      chwTasks: d.openFollowUps ?? 0,
+      totalPatients: d.myTotalPatients ?? 0,
+      highRisk: d.myHighRiskPatients ?? 0,
+      missedVisits: d.myMissedAppointments ?? 0,
+      chwTasks: d.myChwTasks ?? 0,
     };
+  },
+  getAlerts: async (): Promise<PinAlert[]> => {
+    const response = await api.get("/dashboard/alerts");
+    return response.data.alerts ?? [];
+  },
+  dismissAlert: async (id: string): Promise<void> => {
+    await api.patch(`/dashboard/alerts/${id}/dismiss`);
   },
 };
 
