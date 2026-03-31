@@ -7,7 +7,10 @@ import {
   LogOut,
   Stethoscope,
   Baby,
-  MessageSquare
+  MessageSquare,
+  DollarSign,
+  BarChart3,
+  CreditCard
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 
@@ -45,11 +48,15 @@ const SidebarItem = ({ icon, label, active, onClick, badge }: SidebarItemProps) 
 );
 
 interface SidebarProps {
-  onNavigate: (page: 'overview' | 'patients' | 'alerts' | 'chw' | 'postnatal') => void;
-  currentPage: 'overview' | 'patients' | 'alerts' | 'chw' | 'postnatal';
+  onNavigate: (page: 'overview' | 'patients' | 'alerts' | 'chw' | 'postnatal' | 'financial-records' | 'analysis' | 'payment' | 'settings') => void;
+  currentPage: 'overview' | 'patients' | 'alerts' | 'chw' | 'postnatal' | 'financial-records' | 'analysis' | 'payment' | 'settings';
+  selectedPlan?: {
+    name: string;
+    tier: string;
+  } | null;
 }
 
-export const Sidebar = ({ onNavigate, currentPage }: SidebarProps) => {
+export const Sidebar = ({ onNavigate, currentPage, selectedPlan }: SidebarProps) => {
   return (
     <aside className="w-72 h-screen bg-white border-r border-slate-100 flex flex-col p-6 sticky top-0">
       <div className="flex items-center gap-3 mb-10 px-2">
@@ -63,46 +70,75 @@ export const Sidebar = ({ onNavigate, currentPage }: SidebarProps) => {
       </div>
 
       <nav className="flex-1 space-y-1">
-        <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-4 px-2">Main Menu</div>
-        <SidebarItem 
-          icon={<LayoutDashboard size={20} />} 
-          label="Overview" 
-          active={currentPage === 'overview'} 
-          onClick={() => onNavigate('overview')}
-        />
-        <SidebarItem 
-          icon={<Users size={20} />} 
-          label="Patients" 
-          active={currentPage === 'patients'} 
-          onClick={() => onNavigate('patients')}
-        />
-        <SidebarItem 
-          icon={<Calendar size={20} />} 
-          label="Alerts" 
-          badge={12} 
-          active={currentPage === 'alerts'}
-          onClick={() => onNavigate('alerts')}
-        />
-        <SidebarItem 
-          icon={<MessageSquare size={20} />} 
-          label="CHW Coordination" 
-          active={currentPage === 'chw'}
-          onClick={() => onNavigate('chw')}
-        />
-        
         <div className="pt-8">
-          <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-4 px-2">Health Programs</div>
+          <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-4 px-2">Main Menu</div>
           <SidebarItem 
-            icon={<Baby size={20} />} 
-            label="Postnatal Care" 
-            active={currentPage === 'postnatal'}
-            onClick={() => onNavigate('postnatal')}
+            icon={<LayoutDashboard size={20} />} 
+            label="Overview" 
+            active={currentPage === 'overview'} 
+            onClick={() => onNavigate('overview')}
           />
+          <SidebarItem 
+            icon={<Users size={20} />} 
+            label="Patients" 
+            active={currentPage === 'patients'} 
+            onClick={() => onNavigate('patients')}
+          />
+          <SidebarItem 
+            icon={<Calendar size={20} />} 
+            label="Alerts" 
+            badge={12} 
+            active={currentPage === 'alerts'}
+            onClick={() => onNavigate('alerts')}
+          />
+          <SidebarItem 
+            icon={<MessageSquare size={20} />} 
+            label="CHW Coordination" 
+            active={currentPage === 'chw'}
+            onClick={() => onNavigate('chw')}
+          />
+          
+          <div className="pt-8">
+            <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-4 px-2">Financial</div>
+            <SidebarItem 
+              icon={<DollarSign size={20} />} 
+              label="Financial Records" 
+              active={currentPage === 'financial-records'} 
+              onClick={() => onNavigate('financial-records')}
+            />
+            <SidebarItem 
+              icon={<BarChart3 size={20} />} 
+              label="Analysis" 
+              active={currentPage === 'analysis'} 
+              onClick={() => onNavigate('analysis')}
+            />
+            <SidebarItem 
+              icon={<CreditCard size={20} />} 
+              label="Payment" 
+              active={currentPage === 'payment'} 
+              onClick={() => onNavigate('payment')}
+            />
+          </div>
+          
+          <div className="pt-8">
+            <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-4 px-2">Health Programs</div>
+            <SidebarItem 
+              icon={<Baby size={20} />} 
+              label="Postnatal Care" 
+              active={currentPage === 'postnatal'}
+              onClick={() => onNavigate('postnatal')}
+            />
+          </div>
         </div>
       </nav>
 
       <div className="mt-auto space-y-1">
-        <SidebarItem icon={<Settings size={20} />} label="Settings" />
+        <SidebarItem 
+              icon={<Settings size={20} />} 
+              label="Settings" 
+              active={currentPage === 'settings'}
+              onClick={() => onNavigate('settings')}
+            />
         <SidebarItem icon={<LogOut size={20} />} label="Sign Out" />
         
         <div className="mt-6 p-4 bg-slate-50 rounded-2xl border border-slate-100">
@@ -110,11 +146,21 @@ export const Sidebar = ({ onNavigate, currentPage }: SidebarProps) => {
             <div className="w-10 h-10 rounded-full bg-brand-100 flex items-center justify-center">
               <span className="text-brand-700 font-bold text-sm">JS</span>
             </div>
-            <div>
+            <div className="flex-1">
               <p className="text-sm font-semibold text-slate-900">Dr. Jean Smith</p>
               <p className="text-xs text-slate-500">OB/GYN Specialist</p>
+              {selectedPlan && (
+                <p className="text-xs text-brand-600 font-medium mt-1">
+                  {selectedPlan.name} Plan
+                </p>
+              )}
             </div>
           </div>
+          {!selectedPlan && (
+            <button className="w-full mt-2 px-3 py-2 bg-brand-600 text-white text-xs font-bold rounded-lg hover:bg-brand-700 transition-colors">
+              Choose Plan
+            </button>
+          )}
         </div>
       </div>
     </aside>

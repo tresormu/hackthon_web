@@ -4,16 +4,19 @@ import { X, Heart, Eye, EyeOff } from 'lucide-react';
 interface AuthModalProps {
   mode: 'login' | 'register';
   onClose: () => void;
-  onAuth: () => void;
+  onAuth: (role?: 'administrator' | 'hospital') => void;
   onSwitchMode: (mode: 'login' | 'register') => void;
 }
 
 export const AuthModal = ({ mode, onClose, onAuth, onSwitchMode }: AuthModalProps) => {
   const [showPassword, setShowPassword] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<'administrator' | 'hospital'>('administrator');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onAuth();
+    // For login, default to administrator since role selection only shows in register
+    const role = mode === 'register' ? selectedRole : 'administrator';
+    onAuth(role);
   };
 
   return (
@@ -76,18 +79,19 @@ export const AuthModal = ({ mode, onClose, onAuth, onSwitchMode }: AuthModalProp
             {mode === 'register' && (
               <div>
                 <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 block">Role</label>
-                <select className="input" required>
-                  <option value="">Select your role</option>
-                  <option>Midwife</option>
-                  <option>Community Health Worker</option>
-                  <option>Doctor</option>
-                  <option>Nurse</option>
-                  <option>Administrator</option>
+                <select 
+                  className="input" 
+                  required
+                  value={selectedRole}
+                  onChange={(e) => setSelectedRole(e.target.value as 'administrator' | 'hospital')}
+                >
+                  <option value="administrator">Administrator</option>
+                  <option value="hospital">Hospital</option>
                 </select>
               </div>
             )}
             <button type="submit" className="btn-primary w-full py-3 mt-2 text-base font-bold rounded-xl">
-              {mode === 'login' ? 'Sign In to Dashboard' : 'Create Account'}
+              {mode === 'login' ? 'Sign In' : 'Create Account'}
             </button>
           </form>
         </div>
