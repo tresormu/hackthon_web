@@ -7,9 +7,10 @@ import mothersService from '../../services/mothersService';
 interface PatientListProps {
   onOpenRegister: () => void;
   searchQuery: string;
+  refreshTrigger?: number;
 }
 
-export const PatientList = ({ onOpenRegister, searchQuery }: PatientListProps) => {
+export const PatientList = ({ onOpenRegister, searchQuery, refreshTrigger }: PatientListProps) => {
   const [patients, setPatients] = useState<Patient[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -34,7 +35,7 @@ export const PatientList = ({ onOpenRegister, searchQuery }: PatientListProps) =
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [refreshTrigger]);
 
   const filteredPatients: Patient[] = useMemo(() => (
     patients.filter(patient =>

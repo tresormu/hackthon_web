@@ -40,6 +40,7 @@ const App = () => {
   const [adminPage, setAdminPage] = useState<AdminPage>('overview');
   const [isRegisterModalOpen, setIsRegisterModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [patientRefreshTrigger, setPatientRefreshTrigger] = useState(0);
   const [showRegistrationPayment, setShowRegistrationPayment] = useState(false);
   const [callbackTxRef] = useState<string | null>(() => getCallbackTxRef());
 
@@ -142,7 +143,7 @@ const App = () => {
             <main className="flex-1 p-8 pb-12 overflow-y-auto">
               {currentPage === 'overview' && <Overview searchQuery={searchQuery} />}
               {currentPage === 'patients' && (
-                <PatientList onOpenRegister={() => setIsRegisterModalOpen(true)} searchQuery={searchQuery} />
+                <PatientList onOpenRegister={() => setIsRegisterModalOpen(true)} searchQuery={searchQuery} refreshTrigger={patientRefreshTrigger} />
               )}
               {currentPage === 'alerts' && <MissedVisitAlerts />}
               {currentPage === 'chw' && <UmujyanamaCoordination />}
@@ -156,7 +157,11 @@ const App = () => {
         </>
       )}
 
-      <RegisterPatientModal isOpen={isRegisterModalOpen} onClose={() => setIsRegisterModalOpen(false)} />
+      <RegisterPatientModal
+        isOpen={isRegisterModalOpen}
+        onClose={() => setIsRegisterModalOpen(false)}
+        onRegistered={() => setPatientRefreshTrigger(t => t + 1)}
+      />
     </div>
   );
 };

@@ -6,9 +6,10 @@ import { useMamaCare } from '../../contexts/useMamaCare';
 interface RegisterPatientModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onRegistered?: () => void;
 }
 
-export const RegisterPatientModal = ({ isOpen, onClose }: RegisterPatientModalProps) => {
+export const RegisterPatientModal = ({ isOpen, onClose, onRegistered }: RegisterPatientModalProps) => {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -79,6 +80,7 @@ export const RegisterPatientModal = ({ isOpen, onClose }: RegisterPatientModalPr
         })),
       } as any);
       if (result?.pinCode) setGeneratedPin(result.pinCode);
+      onRegistered?.();
       setStep(4);
     } catch (err: any) {
       const data = err?.response?.data;
