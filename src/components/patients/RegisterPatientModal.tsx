@@ -86,7 +86,7 @@ export const RegisterPatientModal = ({ isOpen, onClose }: RegisterPatientModalPr
       if (typeof message !== 'string') {
         message = data?.message?.message ?? JSON.stringify(message);
       }
-      setError(message);
+      setError(message as string);
     } finally {
       setLoading(false);
     }
