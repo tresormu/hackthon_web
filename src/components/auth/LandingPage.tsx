@@ -1,4 +1,4 @@
-import { Heart, Shield, Users, TrendingUp, Baby, CheckCircle, ArrowRight, Star, Menu, X } from 'lucide-react';
+import { Heart, Shield, Users, Baby, ArrowRight, Menu, X } from 'lucide-react';
 import { useState } from 'react';
 
 interface LandingPageProps {
@@ -168,6 +168,21 @@ export const LandingPage = ({ onOpenAuth }: LandingPageProps) => {
         </div>
       </section>
 
+      {/* Images */}
+      <section className="py-12 px-6">
+        <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="rounded-3xl overflow-hidden border border-slate-100 bg-white">
+            <img src="/PregnancyPhotos.jpg" alt="Maternal care consultation" className="w-full h-64 object-cover" />
+          </div>
+          <div className="rounded-3xl overflow-hidden border border-slate-100 bg-white">
+            <img src="/TodayCare.jpg" alt="Health worker providing care" className="w-full h-64 object-cover" />
+          </div>
+          <div className="rounded-3xl overflow-hidden border border-slate-100 bg-white">
+            <img src="/download (1).jpg" alt="Mother and child" className="w-full h-64 object-cover" />
+          </div>
+        </div>
+      </section>
+
       {/* How It Works */}
       <section id="how-it-works" className="py-24 px-6 bg-slate-50">
         <div className="max-w-5xl mx-auto">
@@ -199,14 +214,16 @@ export const LandingPage = ({ onOpenAuth }: LandingPageProps) => {
             <h2 className="text-3xl font-black text-slate-900 mb-3">Everything you need in one place</h2>
             <p className="text-slate-500 max-w-xl mx-auto">Built for Rwanda's health system, designed for the frontline worker.</p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
             {features.map(({ icon: Icon, title, desc }) => (
-              <div key={title} className="card group hover:border-brand-200 hover:shadow-brand-100">
-                <div className="p-3 bg-brand-50 rounded-2xl w-fit mb-4 group-hover:bg-brand-100 transition-colors">
+              <div key={title} className="flex gap-4">
+                <div className="p-3 bg-brand-50 rounded-2xl w-fit h-fit">
                   <Icon size={22} className="text-brand-600" />
                 </div>
-                <h3 className="font-bold text-slate-900 mb-2">{title}</h3>
-                <p className="text-slate-500 text-sm leading-relaxed">{desc}</p>
+                <div>
+                  <h3 className="font-bold text-slate-900 mb-2">{title}</h3>
+                  <p className="text-slate-500 text-sm leading-relaxed">{desc}</p>
+                </div>
               </div>
             ))}
           </div>
@@ -219,49 +236,18 @@ export const LandingPage = ({ onOpenAuth }: LandingPageProps) => {
           <div className="text-center mb-12">
             <h2 className="text-3xl font-black text-slate-900 mb-3">Trusted by health workers</h2>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
             {testimonials.map((t) => (
-              <div key={t.name} className="card">
-                <div className="flex gap-1 mb-4">
-                  {[...Array(5)].map((_, i) => <Star key={i} size={14} className="text-amber-400 fill-amber-400" />)}
+              <div key={t.name} className="flex gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-brand-100 flex items-center justify-center text-brand-700 font-bold text-sm">
+                  {t.name.charAt(0)}
                 </div>
-                <p className="text-slate-700 text-sm leading-relaxed mb-6 italic">"{t.quote}"</p>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-brand-100 flex items-center justify-center text-brand-700 font-bold text-sm">
-                    {t.name.charAt(0)}
-                  </div>
-                  <div>
-                    <p className="font-bold text-slate-900 text-sm">{t.name}</p>
-                    <p className="text-xs text-slate-500">{t.role}</p>
-                  </div>
+                <div>
+                  <p className="text-slate-700 text-sm leading-relaxed mb-3">"{t.quote}"</p>
+                  <p className="font-bold text-slate-900 text-sm">{t.name}</p>
+                  <p className="text-xs text-slate-500">{t.role}</p>
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section id="pricing" className="py-24 px-6">
-        <div className="max-w-3xl mx-auto text-center bg-gradient-to-br from-brand-600 to-brand-800 rounded-3xl p-16 text-white shadow-2xl shadow-brand-200">
-          <div className="flex justify-center mb-6">
-            <div className="p-4 bg-white/20 rounded-2xl backdrop-blur-md">
-              <TrendingUp size={32} className="text-white" />
-            </div>
-          </div>
-          <h2 className="text-3xl font-black mb-4">Ready to transform maternal care?</h2>
-          <p className="text-brand-100 opacity-80 mb-8 max-w-md mx-auto">Join hundreds of health workers already using MamaCare+ to save lives every day.</p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <button onClick={() => onOpenAuth('register')} className="flex items-center gap-2 bg-white text-brand-700 font-bold px-8 py-4 rounded-2xl hover:bg-brand-50 transition-colors shadow-lg">
-              Create Free Account <ArrowRight size={18} />
-            </button>
-            <button onClick={() => onOpenAuth('login')} className="flex items-center gap-2 border border-white/30 text-white font-semibold px-8 py-4 rounded-2xl hover:bg-white/10 transition-colors">
-              Sign In
-            </button>
-          </div>
-          <div className="flex items-center justify-center gap-6 mt-8 text-brand-100 opacity-60 text-xs">
-            {['Free to start', 'No credit card', 'HIPAA compliant'].map((item) => (
-              <span key={item} className="flex items-center gap-1.5"><CheckCircle size={12} /> {item}</span>
             ))}
           </div>
         </div>

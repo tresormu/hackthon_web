@@ -1,27 +1,15 @@
-import { useEffect, useState } from 'react';
 import { AlertCircle, Phone, MessageSquare } from 'lucide-react';
 import { motion } from 'framer-motion';
 import appointmentsService from '../../services/appointmentsService';
-import type { ChwTask } from '../../contexts/MamaCareContext';
+import { useMamaCare } from '../../contexts/useMamaCare';
 
 export const MissedVisitAlerts = () => {
-  const [alerts, setAlerts] = useState<ChwTask[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    appointmentsService.getMissedAlerts()
-      .then(setAlerts)
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, []);
+  const { state, completeTask } = useMamaCare();
+  const alerts = state.chwTasks;
+  const loading = state.loading;
 
   const handleComplete = async (id: string | number) => {
-    try {
-      await appointmentsService.updateStatus(id.toString(), 'completed');
-      setAlerts(prev => prev.filter(a => a.id !== id));
-    } catch (err) {
-      console.error(err);
-    }
+    await completeTask(id);
   };
 
   if (loading) return <div className="flex items-center justify-center py-12 text-slate-500">Loading alerts...</div>;

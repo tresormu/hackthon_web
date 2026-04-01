@@ -1,61 +1,18 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Key, Phone, X, Copy, Check, Bell } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import dashboardService, { type PinAlert } from '../../services/dashboardService';
-
-const API_URL = import.meta.env.VITE_APP_API_URL;
-const SSE_URL = `${API_URL}/dashboard/sse`;
 
 export const PinAlertsPanel = () => {
   const [alerts, setAlerts] = useState<PinAlert[]>([]);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState<string | null>(null);
-  const esRef = useRef<EventSource | null>(null);
 
-  // Load existing undismissed alerts on mount
   useEffect(() => {
     dashboardService.getAlerts()
       .then(setAlerts)
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, []);
-
-  // Open SSE connection — push new alerts in real time
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-    if (!API_URL) {
-      console.error('VITE_APP_API_URL is not set; SSE connection skipped.');
-      return;
-    }
-
-    // EventSource doesn't support custom headers — pass token as query param
-    const url = `${SSE_URL}?token=${encodeURIComponent(token)}`;
-    const es = new EventSource(url);
-    esRef.current = es;
-
-    es.addEventListener('pin_alert', (e: MessageEvent) => {
-      try {
-        const alert: PinAlert = JSON.parse(e.data);
-        // Map backend payload to PinAlert shape
-        setAlerts(prev => {
-          // Avoid duplicates if alert was already loaded via REST
-          if (prev.some(a => a._id === alert._id)) return prev;
-          return [{ ...alert, dismissed: false }, ...prev];
-        });
-      } catch {
-        // ignore malformed events
-      }
-    });
-
-    es.onerror = () => {
-      // SSE will auto-reconnect; no action needed
-    };
-
-    return () => {
-      es.close();
-      esRef.current = null;
-    };
   }, []);
 
   const handleDismiss = async (id: string) => {

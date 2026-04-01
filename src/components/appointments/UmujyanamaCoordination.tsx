@@ -1,31 +1,23 @@
 import { useEffect, useState } from 'react';
 import { User, MessageSquare, CheckCircle2, Clock } from 'lucide-react';
 import doctorsService, { type ChwUser } from '../../services/doctorsService';
-import appointmentsService from '../../services/appointmentsService';
-import type { ChwTask } from '../../contexts/MamaCareContext';
+import { useMamaCare } from '../../contexts/useMamaCare';
 
 export const UmujyanamaCoordination = () => {
+  const { state, completeTask } = useMamaCare();
+  const tasks = state.chwTasks;
   const [chws, setChws] = useState<ChwUser[]>([]);
-  const [tasks, setTasks] = useState<ChwTask[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([
-      doctorsService.getChws(),
-      appointmentsService.getMissedAlerts(),
-    ]).then(([chwList, followUps]) => {
-      setChws(chwList);
-      setTasks(followUps);
-    }).catch(console.error).finally(() => setLoading(false));
+    doctorsService.getChws()
+      .then(setChws)
+      .catch(console.error)
+      .finally(() => setLoading(false));
   }, []);
 
   const handleResolve = async (taskId: string | number) => {
-    try {
-      await appointmentsService.updateStatus(taskId.toString(), 'completed');
-      setTasks(prev => prev.map(t => t.id === taskId ? { ...t, status: 'Completed' } : t));
-    } catch (err) {
-      console.error(err);
-    }
+    await completeTask(taskId);
   };
 
   if (loading) return <div className="flex items-center justify-center py-12 text-slate-500">Loading...</div>;

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { 
   LayoutDashboard, 
   Users, 
@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 import type { AuthUser } from '../../contexts/AuthContext';
-import appointmentsService from '../../services/appointmentsService';
+import { useMamaCare } from '../../contexts/useMamaCare';
 
 interface SidebarItemProps {
   icon: React.ReactNode;
@@ -58,13 +58,8 @@ interface SidebarProps {
 }
 
 export const Sidebar = ({ onNavigate, currentPage, user, onLogout, selectedPlan }: SidebarProps) => {
-  const [alertCount, setAlertCount] = useState(0);
-
-  useEffect(() => {
-    appointmentsService.getMissedAlerts()
-      .then(tasks => setAlertCount(tasks.filter(t => t.status === 'Pending').length))
-      .catch(() => {});
-  }, []);
+  const { state } = useMamaCare();
+  const alertCount = state.chwTasks.filter(t => t.status === 'Pending').length;
   return (
     <aside className="w-72 h-screen bg-white border-r border-slate-100 flex flex-col p-6 sticky top-0">
       <div className="flex items-center gap-3 mb-10 px-2">
