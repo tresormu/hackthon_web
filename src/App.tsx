@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Sidebar } from './components/layout/Sidebar';
 import { Header } from './components/layout/Header';
 import { Overview } from './components/dashboard/Overview';
@@ -21,6 +21,7 @@ import { PaymentManagementComponent } from './components/financial/PaymentManage
 import { DoctorSettings } from './components/doctor/DoctorSettings';
 import { SubscriptionBanner } from './components/payment/SubscriptionBanner';
 import { useAuth } from './contexts/AuthContext';
+import { useMamaCare } from './contexts/useMamaCare';
 
 type DoctorPage = 'overview' | 'patients' | 'alerts' | 'chw' | 'postnatal' | 'financial-records' | 'analysis' | 'payment' | 'settings';
 type AdminPage = 'overview' | 'users' | 'billing' | 'analytics' | 'settings';
@@ -35,6 +36,7 @@ function getCallbackTxRef(): string | null {
 
 const App = () => {
   const { user, loading, logout } = useAuth();
+  const { loadData } = useMamaCare();
   const [authMode, setAuthMode] = useState<'login' | 'register' | null>(null);
   const [currentPage, setCurrentPage] = useState<DoctorPage>('overview');
   const [adminPage, setAdminPage] = useState<AdminPage>('overview');
@@ -42,6 +44,13 @@ const App = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showRegistrationPayment, setShowRegistrationPayment] = useState(false);
   const [callbackTxRef] = useState<string | null>(() => getCallbackTxRef());
+
+  // Refresh patients data when the Patients page opens
+  useEffect(() => {
+    if (user && user.role !== 'admin' && currentPage === 'patients') {
+      loadData();
+    }
+  }, [currentPage, user, loadData]);
 
   const handleLoginSuccess = () => {
     // Login: just close modal, go straight to dashboard
