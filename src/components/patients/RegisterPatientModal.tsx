@@ -82,11 +82,8 @@ export const RegisterPatientModal = ({ isOpen, onClose }: RegisterPatientModalPr
       setStep(4);
     } catch (err: any) {
       const data = err?.response?.data;
-      let message: unknown = data?.error ?? data?.message ?? err?.message ?? 'Failed to register patient. Please try again.';
-      if (typeof message !== 'string') {
-        message = data?.message?.message ?? JSON.stringify(message);
-      }
-      setError(message as string);
+      const message: string = String(data?.error ?? data?.message ?? err?.message ?? 'Failed to register patient. Please try again.');
+      setError(message);
     } finally {
       setLoading(false);
     }
