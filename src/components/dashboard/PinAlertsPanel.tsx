@@ -3,7 +3,8 @@ import { Key, Phone, X, Copy, Check, Bell } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import dashboardService, { type PinAlert } from '../../services/dashboardService';
 
-const SSE_URL = `${import.meta.env.VITE_APP_API_URL || 'http://localhost:5000/api'}/dashboard/sse`;
+const API_URL = import.meta.env.VITE_APP_API_URL;
+const SSE_URL = `${API_URL}/dashboard/sse`;
 
 export const PinAlertsPanel = () => {
   const [alerts, setAlerts] = useState<PinAlert[]>([]);
@@ -23,6 +24,10 @@ export const PinAlertsPanel = () => {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) return;
+    if (!API_URL) {
+      console.error('VITE_APP_API_URL is not set; SSE connection skipped.');
+      return;
+    }
 
     // EventSource doesn't support custom headers — pass token as query param
     const url = `${SSE_URL}?token=${encodeURIComponent(token)}`;
