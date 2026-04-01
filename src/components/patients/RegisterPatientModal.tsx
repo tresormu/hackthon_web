@@ -80,7 +80,6 @@ export const RegisterPatientModal = ({ isOpen, onClose, onRegistered }: Register
         })),
       } as any);
       if (result?.pinCode) setGeneratedPin(result.pinCode);
-      onRegistered?.();
       setStep(4);
     } catch (err: any) {
       const data = err?.response?.data;
@@ -91,7 +90,8 @@ export const RegisterPatientModal = ({ isOpen, onClose, onRegistered }: Register
     }
   };
 
-  const handleClose = () => {
+  const handleClose = (wasRegistered = false) => {
+    if (wasRegistered) onRegistered?.();
     setStep(1);
     setGeneratedPin('');
     setPinCopied(false);
@@ -108,7 +108,7 @@ export const RegisterPatientModal = ({ isOpen, onClose, onRegistered }: Register
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={handleClose}
+            onClick={() => handleClose()}
             className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
           />
           
@@ -124,7 +124,7 @@ export const RegisterPatientModal = ({ isOpen, onClose, onRegistered }: Register
                   <h3 className="text-2xl font-bold text-slate-900">New Patient Registration</h3>
                   <p className="text-slate-500 text-sm mt-1">Confirm pregnancy and enroll mother in tracking.</p>
                 </div>
-                <button onClick={handleClose} className="p-2 hover:bg-slate-100 rounded-xl transition-colors">
+                <button onClick={() => handleClose()} className="p-2 hover:bg-slate-100 rounded-xl transition-colors">
                   <X size={20} className="text-slate-400" />
                 </button>
               </div>
@@ -381,7 +381,7 @@ export const RegisterPatientModal = ({ isOpen, onClose, onRegistered }: Register
                     onClick={() => {
                       if (step < 3) setStep(step + 1);
                       else if (step === 3) handleComplete();
-                      else handleClose();
+                      else handleClose(true);
                     }}
                     className="flex-[2] btn-primary py-4 rounded-2xl text-lg font-bold shadow-lg shadow-brand-500/20 disabled:opacity-60"
                   >
