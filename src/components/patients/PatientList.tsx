@@ -1,8 +1,8 @@
 
-import React from 'react';
-import { useMamaCare } from '../../contexts/useMamaCare';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Search, Filter, Plus, ChevronRight, MoreHorizontal } from 'lucide-react';
 import type { Patient } from '../../contexts/MamaCareContext';
+import mothersService from '../../services/mothersService';
 
 interface PatientListProps {
   onOpenRegister: () => void;
@@ -10,17 +10,45 @@ interface PatientListProps {
 }
 
 export const PatientList = ({ onOpenRegister, searchQuery }: PatientListProps) => {
-  const { state } = useMamaCare();
-  const { patients, loading } = state;
+  const [patients, setPatients] = useState<Patient[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const filteredPatients: Patient[] = patients.filter(patient => 
-    patient.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    patient.id?.toString().includes(searchQuery) ||
-    patient.phone.includes(searchQuery)
-  );
+  useEffect(() => {
+    let isMounted = true;
+    setLoading(true);
+    setError(null);
+    mothersService.getAll()
+      .then((data) => {
+        if (isMounted) setPatients(data);
+      })
+      .catch((err: any) => {
+        if (isMounted) {
+          const message = err?.response?.data?.message ?? err?.message ?? 'Failed to load patients.';
+          setError(typeof message === 'string' ? message : 'Failed to load patients.');
+        }
+      })
+      .finally(() => {
+        if (isMounted) setLoading(false);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const filteredPatients: Patient[] = useMemo(() => (
+    patients.filter(patient =>
+      patient.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      patient.id?.toString().includes(searchQuery) ||
+      patient.phone.includes(searchQuery)
+    )
+  ), [patients, searchQuery]);
 
   if (loading) {
     return <div className="flex items-center justify-center py-12 text-slate-500">Loading patients...</div>;
+  }
+  if (error) {
+    return <div className="flex items-center justify-center py-12 text-rose-600">{error}</div>;
   }
 
   return (
