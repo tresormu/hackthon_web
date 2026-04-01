@@ -1,4 +1,4 @@
-import React, { createContext, useReducer, useEffect, useState, type ReactNode } from 'react';
+import React, { createContext, useReducer, useState, type ReactNode } from 'react';
 import mothersService from '../services/mothersService';
 import appointmentsService from '../services/appointmentsService';
 
@@ -100,11 +100,6 @@ const MamaCareContext = createContext<ContextType | undefined>(undefined);
 
 export const MamaCareProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [state, dispatch] = useReducer(mamaCareReducer, initialState);
-
-  // Only load data when authenticated
-  useEffect(() => {
-    if (localStorage.getItem('token')) loadData();
-  }, []);
 
   const loadData = async () => {
     dispatch({ type: 'SET_LOADING' });
