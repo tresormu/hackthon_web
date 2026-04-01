@@ -1,4 +1,4 @@
-import { Heart, Shield, Users, Baby, ArrowRight, Menu, X } from 'lucide-react';
+import { Heart, Shield, Users, Baby, ArrowRight, Menu, X, Mail, Phone, MapPin, Twitter, Linkedin, Facebook } from 'lucide-react';
 import { useState } from 'react';
 
 interface LandingPageProps {
@@ -254,14 +254,99 @@ export const LandingPage = ({ onOpenAuth }: LandingPageProps) => {
       </section>
 
       {/* Footer */}
-      <footer className="py-12 px-6 bg-slate-900 text-center">
-        <div className="flex items-center justify-center gap-2 mb-3">
-          <div className="p-1 bg-brand-600 rounded-md">
-            <Heart size={14} className="text-white" />
+      <footer className="bg-slate-900 text-slate-200">
+        {/* Top CTA Strip */}
+        <div className="border-b border-slate-800">
+          <div className="max-w-6xl mx-auto px-6 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div>
+              <p className="font-bold text-white text-lg">Ready to transform maternal care?</p>
+              <p className="text-slate-400 text-sm">Join hundreds of health workers across Rwanda.</p>
+            </div>
+            <button onClick={() => onOpenAuth('register')} className="btn-primary flex items-center gap-2 px-6 py-3 rounded-xl whitespace-nowrap">
+              Get Started Free <ArrowRight size={16} />
+            </button>
           </div>
-          <span className="font-black text-white">MamaCare<span className="text-brand-600">+</span></span>
         </div>
-        <p className="text-slate-400 text-xs">© 2026 MamaCare+. Improving maternal health across Rwanda.</p>
+
+        {/* Main Footer Grid */}
+        <div className="max-w-6xl mx-auto px-6 py-14">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
+            {/* Brand */}
+            <div className="md:col-span-1">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="p-1.5 bg-brand-600 rounded-md">
+                  <Heart size={14} className="text-white" />
+                </div>
+                <span className="font-black text-white text-lg">MamaCare<span className="text-brand-400">+</span></span>
+              </div>
+              <p className="text-sm text-slate-400 leading-relaxed mb-6">
+                Rwanda's leading maternal and child health platform — built for frontline health workers.
+              </p>
+              <div className="flex items-center gap-3">
+                <a href="#" className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-brand-600 flex items-center justify-center transition-colors">
+                  <Twitter size={14} className="text-slate-300" />
+                </a>
+                <a href="#" className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-brand-600 flex items-center justify-center transition-colors">
+                  <Linkedin size={14} className="text-slate-300" />
+                </a>
+                <a href="#" className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-brand-600 flex items-center justify-center transition-colors">
+                  <Facebook size={14} className="text-slate-300" />
+                </a>
+              </div>
+            </div>
+
+            {/* Product */}
+            <div>
+              <h4 className="text-xs font-bold uppercase tracking-widest text-slate-300 mb-5">Product</h4>
+              <ul className="space-y-3 text-sm text-slate-400">
+                {['Patient Tracking', 'Missed Visit Alerts', 'CHW Coordination', 'Postnatal Care', 'Analytics Dashboard'].map(item => (
+                  <li key={item}><a href="#" className="hover:text-white transition-colors">{item}</a></li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Company */}
+            <div>
+              <h4 className="text-xs font-bold uppercase tracking-widest text-slate-300 mb-5">Company</h4>
+              <ul className="space-y-3 text-sm text-slate-400">
+                {['About Us', 'Our Mission', 'Careers', 'Privacy Policy', 'Terms of Service'].map(item => (
+                  <li key={item}><a href="#" className="hover:text-white transition-colors">{item}</a></li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Contact */}
+            <div>
+              <h4 className="text-xs font-bold uppercase tracking-widest text-slate-300 mb-5">Contact Us</h4>
+              <ul className="space-y-4 text-sm text-slate-400">
+                <li className="flex items-start gap-3">
+                  <Mail size={15} className="text-brand-400 mt-0.5 shrink-0" />
+                  <span>support@mamacare.rw</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Phone size={15} className="text-brand-400 mt-0.5 shrink-0" />
+                  <span>+250 788 000 000</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <MapPin size={15} className="text-brand-400 mt-0.5 shrink-0" />
+                  <span>KG 7 Ave, Kigali Innovation City,<br />Kigali, Rwanda</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Bar */}
+        <div className="border-t border-slate-800">
+          <div className="max-w-6xl mx-auto px-6 py-5 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-slate-500">
+            <p>© 2026 MamaCare+. All rights reserved. Built with ❤️ for Rwanda's health system.</p>
+            <div className="flex items-center gap-5">
+              <a href="#" className="hover:text-slate-300 transition-colors">Privacy Policy</a>
+              <a href="#" className="hover:text-slate-300 transition-colors">Terms of Service</a>
+              <a href="#" className="hover:text-slate-300 transition-colors">Security</a>
+            </div>
+          </div>
+        </div>
       </footer>
     </div>
   );
