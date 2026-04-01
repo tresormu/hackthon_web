@@ -5,13 +5,6 @@ interface LandingPageProps {
   onOpenAuth: (mode: 'login' | 'register') => void;
 }
 
-const stats = [
-  { value: '12,400+', label: 'Mothers Enrolled' },
-  { value: '98%', label: 'Vaccination Rate' },
-  { value: '340', label: 'Health Workers' },
-  { value: '30', label: 'Health Centers' },
-];
-
 const features = [
   { icon: Heart, title: 'Maternal Health Tracking', desc: 'Monitor pregnancies from first trimester through postnatal care with real-time alerts.' },
   { icon: Baby, title: 'Child Growth Monitoring', desc: 'Track vaccinations, growth milestones, and nutrition for infants up to 2 years.' },
@@ -172,18 +165,6 @@ export const LandingPage = ({ onOpenAuth }: LandingPageProps) => {
               Sign In to Dashboard
             </button>
           </div>
-        </div>
-      </section>
-
-      {/* Stats */}
-      <section className="py-16 px-6 bg-slate-900">
-        <div className="max-w-5xl mx-auto grid grid-cols-2 sm:grid-cols-4 gap-8">
-          {stats.map((s) => (
-            <div key={s.label} className="text-center">
-              <p className="text-4xl font-black text-white mb-1">{s.value}</p>
-              <p className="text-slate-400 text-sm font-medium">{s.label}</p>
-            </div>
-          ))}
         </div>
       </section>
 

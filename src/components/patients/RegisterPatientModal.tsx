@@ -81,7 +81,12 @@ export const RegisterPatientModal = ({ isOpen, onClose }: RegisterPatientModalPr
       if (result?.pinCode) setGeneratedPin(result.pinCode);
       setStep(4);
     } catch (err: any) {
-      setError(err?.response?.data?.error ?? err?.response?.data?.message ?? 'Failed to register patient. Please try again.');
+      const data = err?.response?.data;
+      let message: unknown = data?.error ?? data?.message ?? err?.message ?? 'Failed to register patient. Please try again.';
+      if (typeof message !== 'string') {
+        message = data?.message?.message ?? JSON.stringify(message);
+      }
+      setError(message);
     } finally {
       setLoading(false);
     }

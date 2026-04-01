@@ -31,7 +31,12 @@ export const AuthModal = ({ mode, onClose, onAuth, onSwitchMode }: AuthModalProp
       }
       onAuth();
     } catch (err: any) {
-      setError(err.response?.data?.error ?? err.response?.data?.message ?? 'Authentication failed');
+      const data = err?.response?.data;
+      let message: unknown = data?.error ?? data?.message ?? err?.message ?? 'Authentication failed';
+      if (typeof message !== 'string') {
+        message = data?.message?.message ?? JSON.stringify(message);
+      }
+      setError(message as string);
     } finally {
       setLoading(false);
     }
